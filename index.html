@@ -94,21 +94,25 @@ h1 {
     inset: 0;
     background: rgba(0,0,0,0.95);
     display: none;
-    align-items: center;
-    justify-content: center;
+    overflow: auto;           /* allow scrollbars */
     z-index: 999;
+    padding: 20px;            /* optional space around large images */
 }
 
 .lightbox img {
-    max-width: 90%;
-    max-height: 90%;
-    border-radius: 12px;
+    display: block;
+    width: auto;               /* natural size */
+    height: auto;              /* natural size */
+    max-width: none;           /* remove constraints */
+    max-height: none;
+    margin: 0 auto;            /* optional centering horizontally */
 }
 
 .lightbox.active {
-    display: flex;
+    display: block;
+    overflow: auto;            /* ensure scrollbars show if image is larger than viewport */
 }
-
+    
 @media (max-width: 1200px) {
     .card {
         flex-direction: column;
@@ -243,4 +247,5 @@ renderPage(currentPage);
 </script>
 
 </body>
+
 </html>
