@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prompt Gallery</title>
+
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #111;
+        color: #fff;
+    }
+
+    /* ====== GALLERY GRID ====== */
+    .gallery {
+        display: grid;
+        grid-template-columns: repeat(10, 1fr);
+        gap: 4px;
+        padding: 4px;
+    }
+
+    .gallery img {
+        width: 100%;
+        height: auto;
+        cursor: pointer;
+        object-fit: cover;
+        transition: transform 0.2s;
+    }
+
+    .gallery img:hover {
+        transform: scale(1.05);
+    }
+
+    /* ====== LIGHTBOX ====== */
+    .lightbox {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.9);
+        padding: 40px;
+        box-sizing: border-box;
+        overflow-y: auto;
+    }
+
+    .lightbox-content {
+        max-width: 1400px;
+        margin: auto;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 20px;
+        align-items: start;
+    }
+
+    .lightbox img {
+        width: 100%;
+        border-radius: 6px;
+    }
+
+    .prompt-box {
+        background: #222;
+        padding: 20px;
+        border-radius: 6px;
+        white-space: pre-wrap;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .copy-btn {
+        margin-top: 10px;
+        padding: 8px 12px;
+        border: none;
+        background: #4CAF50;
+        color: white;
+        cursor: pointer;
+        border-radius: 4px;
+    }
+
+    .copy-btn:hover {
+        background: #45a049;
+    }
+
+    .close {
+        position: fixed;
+        top: 20px;
+        right: 30px;
+        font-size: 32px;
+        cursor: pointer;
+    }
+
+    @media (max-width: 1200px) {
+        .gallery {
+            grid-template-columns: repeat(5, 1fr);
+        }
+        .lightbox-content {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+</head>
+<body>
+
+<!-- ====== SET IMAGE COUNT HERE ====== -->
+<script>
+const TOTAL_IMAGES = 50;  // <<< CHANGE THIS
+</script>
+
+<div class="gallery" id="gallery"></div>
+
+<div class="lightbox" id="lightbox">
+    <div class="close" onclick="closeLightbox()">✕</div>
+    <div class="lightbox-content">
+        <img id="imgA" src="">
+        <img id="imgB" src="">
+        <div>
+            <div class="prompt-box" id="promptText">Loading...</div>
+            <button class="copy-btn" onclick="copyPrompt()">Copy Prompt</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const gallery = document.getElementById("gallery");
+
+function pad(num) {
+    return num.toString().padStart(3, '0');
+}
+
+for (let i = 1; i <= TOTAL_IMAGES; i++) {
+    const padded = pad(i);
+    const img = document.createElement("img");
+    img.src = `images/prompt${padded}_a.jpg`;
+    img.onclick = () => openLightbox(padded);
+    gallery.appendChild(img);
+}
+
+function openLightbox(id) {
+    document.getElementById("lightbox").style.display = "block";
+    document.getElementById("imgA").src = `images/prompt${id}_a.jpg`;
+    document.getElementById("imgB").src = `images/prompt${id}_b.jpg`;
+
+    fetch(`prompts/prompt${id}.txt`)
+        .then(response => response.text())
+        .then(text => {
+            document.getElementById("promptText").textContent = text;
+        })
+        .catch(() => {
+            document.getElementById("promptText").textContent = "Prompt not found.";
+        });
+}
+
+function closeLightbox() {
+    document.getElementById("lightbox").style.display = "none";
+}
+
+function copyPrompt() {
+    const text = document.getElementById("promptText").textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        alert("Prompt copied!");
+    });
+}
+
+document.addEventListener("keydown", function(e) {
+    if (e.key === "Escape") closeLightbox();
+});
+</script>
+
+</body>
+</html>
