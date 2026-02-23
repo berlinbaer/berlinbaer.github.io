@@ -6,104 +6,125 @@
 <title>Prompt Gallery</title>
 
 <style>
-    body {
-        margin: 0;
-        font-family: Arial, sans-serif;
-        background: #111;
-        color: #fff;
-    }
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #111;
+    color: #fff;
+}
 
-    /* ====== GALLERY GRID ====== */
+/* ====== GALLERY GRID ====== */
+.gallery {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 4px;
+    padding: 4px;
+}
+
+.gallery img {
+    width: 100%;
+    height: auto;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.gallery img:hover {
+    transform: scale(1.05);
+}
+
+/* ====== LIGHTBOX ====== */
+.lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.9);
+    padding: 40px;
+    box-sizing: border-box;
+    overflow: auto;
+}
+
+.lightbox-content {
+    max-width: 1400px;
+    margin: auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+}
+
+.lightbox img {
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+    display: block;
+    cursor: pointer;
+}
+
+.prompt-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.prompt-box {
+    background: #222;
+    padding: 20px;
+    border-radius: 6px;
+    white-space: pre-wrap;
+    font-size: 14px;
+    line-height: 1.5;
+    overflow-y: auto;
+}
+
+.copy-btn {
+    margin-top: 10px;
+    padding: 8px 12px;
+    border: none;
+    background: #4CAF50;
+    color: white;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.copy-btn:hover {
+    background: #45a049;
+}
+
+.close {
+    position: fixed;
+    top: 20px;
+    right: 30px;
+    font-size: 32px;
+    cursor: pointer;
+}
+
+/* ====== FULLSCREEN IMAGE ====== */
+.fullscreen {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.95);
+    overflow: auto;
+    padding: 40px;
+    box-sizing: border-box;
+    z-index: 999;
+}
+
+.fullscreen img {
+    display: block;
+    margin: auto;
+    max-width: 100%;
+    height: auto;
+}
+
+/* ====== RESPONSIVE ====== */
+@media (max-width: 1200px) {
     .gallery {
-        display: grid;
-        grid-template-columns: repeat(10, 1fr);
-        gap: 4px;
-        padding: 4px;
+        grid-template-columns: repeat(5, 1fr);
     }
-
-    .gallery img {
-        width: 100%;
-        height: auto;
-        cursor: pointer;
-        transition: transform 0.2s;
-    }
-
-    .gallery img:hover {
-        transform: scale(1.05);
-    }
-
-    /* ====== LIGHTBOX ====== */
-    .lightbox {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: rgba(0,0,0,0.9);
-        padding: 40px;
-        box-sizing: border-box;
-        overflow: auto;
-    }
-
     .lightbox-content {
-        max-width: 1400px;
-        margin: auto;
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        gap: 20px;
-        align-items: start; /* important */
+        grid-template-columns: 1fr;
     }
-
-    .lightbox img {
-        width: 100%;
-        height: auto;  /* prevent stretching */
-        border-radius: 6px;
-        display: block;
-    }
-
-    .prompt-container {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .prompt-box {
-        background: #222;
-        padding: 20px;
-        border-radius: 6px;
-        white-space: pre-wrap;
-        font-size: 14px;
-        line-height: 1.5;
-        overflow-y: auto;
-    }
-
-    .copy-btn {
-        margin-top: 10px;
-        padding: 8px 12px;
-        border: none;
-        background: #4CAF50;
-        color: white;
-        cursor: pointer;
-        border-radius: 4px;
-    }
-
-    .copy-btn:hover {
-        background: #45a049;
-    }
-
-    .close {
-        position: fixed;
-        top: 20px;
-        right: 30px;
-        font-size: 32px;
-        cursor: pointer;
-    }
-
-    @media (max-width: 1200px) {
-        .gallery {
-            grid-template-columns: repeat(5, 1fr);
-        }
-        .lightbox-content {
-            grid-template-columns: 1fr;
-        }
-    }
+}
 </style>
 </head>
 <body>
@@ -114,6 +135,7 @@ const TOTAL_IMAGES = 50;  // <<< CHANGE THIS
 
 <div class="gallery" id="gallery"></div>
 
+<!-- ====== MAIN LIGHTBOX ====== -->
 <div class="lightbox" id="lightbox" onclick="outsideClick(event)">
     <div class="close" onclick="closeLightbox()">✕</div>
 
@@ -127,6 +149,11 @@ const TOTAL_IMAGES = 50;  // <<< CHANGE THIS
     </div>
 </div>
 
+<!-- ====== FULLSCREEN VIEW ====== -->
+<div class="fullscreen" id="fullscreen" onclick="closeFullscreen(event)">
+    <img id="fullscreenImg" src="">
+</div>
+
 <script>
 const gallery = document.getElementById("gallery");
 
@@ -134,6 +161,7 @@ function pad(num) {
     return num.toString().padStart(3, '0');
 }
 
+/* Build Gallery */
 for (let i = 1; i <= TOTAL_IMAGES; i++) {
     const padded = pad(i);
     const img = document.createElement("img");
@@ -153,7 +181,9 @@ function openLightbox(id) {
     imgA.src = `images/prompt${id}_a.jpg`;
     imgB.src = `images/prompt${id}_b.jpg`;
 
-    // Wait for image A to load to match height
+    imgA.onclick = () => openFullscreen(imgA.src);
+    imgB.onclick = () => openFullscreen(imgB.src);
+
     imgA.onload = function() {
         const height = imgA.clientHeight;
         promptBox.style.height = height + "px";
@@ -173,10 +203,27 @@ function closeLightbox() {
     document.getElementById("lightbox").style.display = "none";
 }
 
+/* Close main popup if clicking outside content */
 function outsideClick(event) {
     const content = document.getElementById("lightboxContent");
     if (!content.contains(event.target)) {
         closeLightbox();
+    }
+}
+
+/* Fullscreen image view */
+function openFullscreen(src) {
+    const fs = document.getElementById("fullscreen");
+    const fsImg = document.getElementById("fullscreenImg");
+
+    fs.style.display = "block";
+    fsImg.src = src;
+}
+
+function closeFullscreen(event) {
+    const fsImg = document.getElementById("fullscreenImg");
+    if (!fsImg.contains(event.target)) {
+        document.getElementById("fullscreen").style.display = "none";
     }
 }
 
@@ -185,8 +232,18 @@ function copyPrompt() {
     navigator.clipboard.writeText(text);
 }
 
+/* ESC behavior */
 document.addEventListener("keydown", function(e) {
-    if (e.key === "Escape") closeLightbox();
+    const fs = document.getElementById("fullscreen");
+    const lb = document.getElementById("lightbox");
+
+    if (e.key === "Escape") {
+        if (fs.style.display === "block") {
+            fs.style.display = "none";
+        } else if (lb.style.display === "block") {
+            closeLightbox();
+        }
+    }
 });
 </script>
 
