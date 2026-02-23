@@ -126,6 +126,7 @@ h1 {
 <div class="pagination">
     <button class="page-btn" id="prevBtn">Previous</button>
     <button class="page-btn" id="nextBtn">Next</button>
+    <button class="page-btn" id="galleryBtn">Gallery</button>
 </div>
 
 <!-- Lightbox -->
@@ -144,6 +145,11 @@ const nextBtn = document.getElementById("nextBtn");
 const pageCounterDiv = document.getElementById("pageCounter");
 const lightbox = document.getElementById("lightbox");
 const lightboxImg = document.getElementById("lightboxImg");
+
+const galleryBtn = document.getElementById("galleryBtn");
+galleryBtn.onclick = () => {
+    window.location.href = "gallery.html";
+};
 
 const totalPages = Math.ceil(totalPrompts / itemsPerPage);
 
@@ -250,3 +256,4 @@ renderPage(currentPage);
 </script>
 </body>
 </html>
+
