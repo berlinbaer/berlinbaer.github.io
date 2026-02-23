@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Image Gallery</title>
+<style>
+body { font-family: system-ui, sans-serif; background: #000; color: #fff; padding: 40px; }
+h1 { text-align:center; margin-bottom:30px; }
+.gallery-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 10px; }
+.gallery-grid img { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; border-radius: 8px; cursor: pointer; transition:0.2s; }
+.gallery-grid img:hover { transform: scale(1.05); }
+@media (max-width: 1200px) {
+    .gallery-grid { grid-template-columns: repeat(5, 1fr); }
+}
+@media (max-width: 700px) {
+    .gallery-grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<h1>All Images</h1>
+<div class="gallery-grid" id="galleryGrid"></div>
+
+<script>
+const totalImages = 45; // total number of prompts (change as needed)
+const itemsPerPage = 20; // matches your main gallery pagination
+const gallery = document.getElementById("galleryGrid");
+
+for (let i = 1; i <= totalImages; i++) {
+    const id = i.toString().padStart(3,'0'); // 3-digit padding for prompt001_a.jpg
+    const img = document.createElement("img");
+    img.src = `images/prompt${id}_a.jpg`;
+    img.alt = `Prompt ${id}`;
+    
+    // Determine which page this image belongs to in the main gallery
+    const pageNumber = Math.ceil(i / itemsPerPage);
+    
+    img.onclick = () => {
+        // Redirect to main gallery page and jump to the prompt
+        window.location.href = `index.html?page=${pageNumber}#prompt-${i}`;
+    };
+
+    gallery.appendChild(img);
+}
+</script>
+
+</body>
+</html>
