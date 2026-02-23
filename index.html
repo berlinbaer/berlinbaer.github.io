@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI Prompt Gallery</title>
-
 <style>
 body {
     font-family: system-ui, sans-serif;
@@ -12,18 +11,19 @@ body {
     color: #fff;
     padding: 40px;
 }
-
 h1 {
     text-align: center;
-    margin-bottom: 40px;
+    margin-bottom: 20px;
 }
-
+#pageCounter {
+    text-align: center;
+    margin-bottom: 20px;
+}
 .gallery {
     display: flex;
     flex-direction: column;
     gap: 30px;
 }
-
 .card {
     display: flex;
     align-items: center;
@@ -32,7 +32,6 @@ h1 {
     padding: 20px;
     border-radius: 12px;
 }
-
 .card img {
     width: 408px;
     height: 720px;
@@ -41,11 +40,9 @@ h1 {
     cursor: pointer;
     transition: 0.2s ease;
 }
-
 .card img:hover {
     transform: scale(1.02);
 }
-
 .prompt-text {
     flex: 1;
     padding: 16px;
@@ -55,7 +52,6 @@ h1 {
     font-size: 14px;
     white-space: pre-wrap;
 }
-
 .copy-btn {
     padding: 12px 18px;
     border: none;
@@ -65,59 +61,57 @@ h1 {
     cursor: pointer;
     font-weight: 600;
 }
-
 .pagination {
     margin-top: 40px;
     display: flex;
     justify-content: center;
     gap: 20px;
 }
-
 .page-btn {
     padding: 12px 20px;
     border-radius: 8px;
     border: none;
     cursor: pointer;
-    background: white;
-    color: black;
     font-weight: 600;
 }
-
+.page-btn.active {
+    background: white;
+    color: black;
+}
+.page-btn.inactive {
+    background: #333;
+    color: white;
+}
 .page-btn:disabled {
     background: #555;
     color: #aaa;
 }
-
 /* LIGHTBOX */
 .lightbox {
     position: fixed;
     inset: 0;
     background: rgba(0,0,0,0.95);
     display: none;
-    overflow: auto;           /* allow scrollbars */
+    overflow: auto;
     z-index: 999;
-    padding: 20px;            /* optional space around large images */
+    padding: 20px;
+    cursor: zoom-out;
 }
-
 .lightbox img {
     display: block;
-    width: auto;               /* natural size */
-    height: auto;              /* natural size */
-    max-width: none;           /* remove constraints */
+    width: auto;
+    height: auto;
+    max-width: none;
     max-height: none;
-    margin: 0 auto;            /* optional centering horizontally */
+    margin: 0 auto;
 }
-
 .lightbox.active {
     display: block;
-    overflow: auto;            /* ensure scrollbars show if image is larger than viewport */
 }
-    
 @media (max-width: 1200px) {
     .card {
         flex-direction: column;
     }
-
     .card img {
         width: 100%;
         height: auto;
@@ -128,6 +122,9 @@ h1 {
 <body>
 
 <h1>AI Prompt Gallery</h1>
+
+<!-- Top page counter -->
+<div id="pageCounter"></div>
 
 <div class="gallery" id="gallery"></div>
 
@@ -142,31 +139,28 @@ h1 {
 </div>
 
 <script>
-
-const totalPrompts = 60;
+const totalPrompts = 60; // total prompt count
 const itemsPerPage = 20;
 let currentPage = 1;
 
 const gallery = document.getElementById("gallery");
 const prevBtn = document.getElementById("prevBtn");
 const nextBtn = document.getElementById("nextBtn");
+const pageCounterDiv = document.getElementById("pageCounter");
 const lightbox = document.getElementById("lightbox");
 const lightboxImg = document.getElementById("lightboxImg");
 
-function pad(num) {
-    return num.toString().padStart(2, '0');
-}
+const totalPages = Math.ceil(totalPrompts / itemsPerPage);
+
+function pad(num) { return num.toString().padStart(2,'0'); }
 
 async function renderPage(page) {
     gallery.innerHTML = "";
-
     const start = (page - 1) * itemsPerPage + 1;
     const end = Math.min(start + itemsPerPage - 1, totalPrompts);
 
     for (let i = start; i <= end; i++) {
-
         const id = pad(i);
-
         const card = document.createElement("div");
         card.className = "card";
 
@@ -198,16 +192,33 @@ async function renderPage(page) {
         gallery.appendChild(card);
 
         try {
-            const response = await fetch(`prompts/prompt${id}.txt`);
+            const response = await fetch(`./prompts/prompt${id}.txt`);
             const text = await response.text();
             promptDiv.textContent = text;
         } catch {
-            promptDiv.textContent = "Error loading prompt.";
+            promptDiv.textContent = "Prompt file missing.";
         }
     }
 
     prevBtn.disabled = page === 1;
     nextBtn.disabled = end >= totalPrompts;
+
+    renderPageCounter();
+}
+
+function renderPageCounter() {
+    pageCounterDiv.innerHTML = "";
+    for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement("button");
+        btn.textContent = i;
+        btn.className = "page-btn " + (i === currentPage ? "active" : "inactive");
+        btn.onclick = () => {
+            currentPage = i;
+            renderPage(currentPage);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        };
+        pageCounterDiv.appendChild(btn);
+    }
 }
 
 function copyPrompt(index, button) {
@@ -227,25 +238,13 @@ function closeLightbox() {
 }
 
 prevBtn.onclick = () => {
-    if (currentPage > 1) {
-        currentPage--;
-        renderPage(currentPage);
-        window.scrollTo({ top: 0, behavior: "smooth" });
-    }
+    if (currentPage > 1) { currentPage--; renderPage(currentPage); window.scrollTo({ top: 0, behavior: "smooth" }); }
 };
-
 nextBtn.onclick = () => {
-    if (currentPage * itemsPerPage < totalPrompts) {
-        currentPage++;
-        renderPage(currentPage);
-        window.scrollTo({ top: 0, behavior: "smooth" });
-    }
+    if (currentPage * itemsPerPage < totalPrompts) { currentPage++; renderPage(currentPage); window.scrollTo({ top: 0, behavior: "smooth" }); }
 };
 
 renderPage(currentPage);
-
 </script>
-
 </body>
-
 </html>
