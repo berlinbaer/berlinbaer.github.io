@@ -41,7 +41,7 @@
         background: rgba(0,0,0,0.9);
         padding: 40px;
         box-sizing: border-box;
-        overflow-y: auto;
+        overflow: auto;
     }
 
     .lightbox-content {
@@ -50,12 +50,20 @@
         display: grid;
         grid-template-columns: 1fr 1fr 1fr;
         gap: 20px;
-        align-items: start;
+        align-items: stretch;
+        background: #111;
     }
 
     .lightbox img {
         width: 100%;
         border-radius: 6px;
+        display: block;
+    }
+
+    .prompt-container {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
     }
 
     .prompt-box {
@@ -65,6 +73,8 @@
         white-space: pre-wrap;
         font-size: 14px;
         line-height: 1.5;
+        overflow-y: auto;
+        flex: 1;
     }
 
     .copy-btn {
@@ -108,12 +118,14 @@ const TOTAL_IMAGES = 50;  // <<< CHANGE THIS
 
 <div class="gallery" id="gallery"></div>
 
-<div class="lightbox" id="lightbox">
+<div class="lightbox" id="lightbox" onclick="outsideClick(event)">
     <div class="close" onclick="closeLightbox()">✕</div>
-    <div class="lightbox-content">
+
+    <div class="lightbox-content" id="lightboxContent">
         <img id="imgA" src="">
         <img id="imgB" src="">
-        <div>
+
+        <div class="prompt-container">
             <div class="prompt-box" id="promptText">Loading...</div>
             <button class="copy-btn" onclick="copyPrompt()">Copy Prompt</button>
         </div>
@@ -154,11 +166,16 @@ function closeLightbox() {
     document.getElementById("lightbox").style.display = "none";
 }
 
+function outsideClick(event) {
+    const content = document.getElementById("lightboxContent");
+    if (!content.contains(event.target)) {
+        closeLightbox();
+    }
+}
+
 function copyPrompt() {
     const text = document.getElementById("promptText").textContent;
-    navigator.clipboard.writeText(text).then(() => {
-        alert("Prompt copied!");
-    });
+    navigator.clipboard.writeText(text);
 }
 
 document.addEventListener("keydown", function(e) {
