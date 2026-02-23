@@ -109,13 +109,8 @@ h1 {
     display: block;
 }
 @media (max-width: 1200px) {
-    .card {
-        flex-direction: column;
-    }
-    .card img {
-        width: 100%;
-        height: auto;
-    }
+    .card { flex-direction: column; }
+    .card img { width: 100%; height: auto; }
 }
 </style>
 </head>
@@ -139,7 +134,7 @@ h1 {
 </div>
 
 <script>
-const totalPrompts = 60; // total prompt count
+const totalPrompts = 60; // total prompts
 const itemsPerPage = 20;
 let currentPage = 1;
 
@@ -152,7 +147,7 @@ const lightboxImg = document.getElementById("lightboxImg");
 
 const totalPages = Math.ceil(totalPrompts / itemsPerPage);
 
-function pad(num) { return num.toString().padStart(2,'0'); }
+function pad(num) { return num.toString().padStart(3,'0'); } // 3-digit padding
 
 async function renderPage(page) {
     gallery.innerHTML = "";
@@ -176,13 +171,13 @@ async function renderPage(page) {
 
         const promptDiv = document.createElement("div");
         promptDiv.className = "prompt-text";
-        promptDiv.id = `prompt-${i}`;
+        promptDiv.id = `prompt-${id}`; // updated to three-digit anchor
         promptDiv.textContent = "Loading...";
 
         const button = document.createElement("button");
         button.className = "copy-btn";
         button.textContent = "Copy";
-        button.onclick = () => copyPrompt(i, button);
+        button.onclick = () => copyPrompt(id, button);
 
         card.appendChild(imgA);
         card.appendChild(imgB);
@@ -221,8 +216,8 @@ function renderPageCounter() {
     }
 }
 
-function copyPrompt(index, button) {
-    const text = document.getElementById(`prompt-${index}`).innerText;
+function copyPrompt(id, button) {
+    const text = document.getElementById(`prompt-${id}`).innerText;
     navigator.clipboard.writeText(text);
     button.textContent = "Copied!";
     setTimeout(() => button.textContent = "Copy", 1500);
@@ -243,6 +238,13 @@ prevBtn.onclick = () => {
 nextBtn.onclick = () => {
     if (currentPage * itemsPerPage < totalPrompts) { currentPage++; renderPage(currentPage); window.scrollTo({ top: 0, behavior: "smooth" }); }
 };
+
+// Optional: parse ?page= query parameter for deep linking
+const urlParams = new URLSearchParams(window.location.search);
+const pageParam = parseInt(urlParams.get('page'));
+if (!isNaN(pageParam) && pageParam >= 1 && pageParam <= totalPages) {
+    currentPage = pageParam;
+}
 
 renderPage(currentPage);
 </script>
