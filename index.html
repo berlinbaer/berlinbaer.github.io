@@ -118,15 +118,19 @@ h1 {
 
 <h1>AI Prompt Gallery</h1>
 
-<!-- Top page counter -->
-<div id="pageCounter"></div>
-
+<!-- Top page counter with Gallery button -->
+<div id="pageCounterContainer" style="text-align:center; margin-bottom: 20px;">
+    <div id="pageCounter" style="display:inline-block;"></div>
+    <button class="page-btn" id="topGalleryBtn" style="margin-left:10px;">Gallery</button>
+</div>
+    
 <div class="gallery" id="gallery"></div>
 
 <div class="pagination">
     <button class="page-btn" id="prevBtn">Previous</button>
     <button class="page-btn" id="nextBtn">Next</button>
-    <button class="page-btn" id="galleryBtn">Gallery</button>
+    <button class="page-btn" id="topGalleryBtn">Gallery</button>
+    <button class="page-btn" id="bottomGalleryBtn">Gallery</button>
 </div>
 
 <!-- Lightbox -->
@@ -146,11 +150,18 @@ const pageCounterDiv = document.getElementById("pageCounter");
 const lightbox = document.getElementById("lightbox");
 const lightboxImg = document.getElementById("lightboxImg");
 
-const galleryBtn = document.getElementById("galleryBtn");
-galleryBtn.onclick = () => {
+// Top gallery button
+const topGalleryBtn = document.getElementById("topGalleryBtn");
+topGalleryBtn.onclick = () => {
     window.location.href = "gallery.html";
 };
 
+// Bottom gallery button
+const bottomGalleryBtn = document.getElementById("bottomGalleryBtn");
+bottomGalleryBtn.onclick = () => {
+    window.location.href = "gallery.html";
+};
+    
 const totalPages = Math.ceil(totalPrompts / itemsPerPage);
 
 function pad(num) { return num.toString().padStart(3,'0'); } // 3-digit padding
@@ -256,4 +267,5 @@ renderPage(currentPage);
 </script>
 </body>
 </html>
+
 
