@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Prompt Gallery</title>
+
+<style>
+body {
+    font-family: system-ui, sans-serif;
+    background: #000;
+    color: #fff;
+    padding: 40px;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.gallery {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.card {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    background: #111;
+    padding: 20px;
+    border-radius: 12px;
+}
+
+.card img {
+    width: 408px;
+    height: 720px;
+    object-fit: cover;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.card img:hover {
+    transform: scale(1.02);
+}
+
+.prompt-text {
+    flex: 1;
+    padding: 16px;
+    border-radius: 8px;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    font-size: 14px;
+    white-space: pre-wrap;
+}
+
+.copy-btn {
+    padding: 12px 18px;
+    border: none;
+    border-radius: 8px;
+    background: white;
+    color: black;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.pagination {
+    margin-top: 40px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.page-btn {
+    padding: 12px 20px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    background: white;
+    color: black;
+    font-weight: 600;
+}
+
+.page-btn:disabled {
+    background: #555;
+    color: #aaa;
+}
+
+/* LIGHTBOX */
+.lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.95);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+}
+
+.lightbox img {
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 12px;
+}
+
+.lightbox.active {
+    display: flex;
+}
+
+@media (max-width: 1200px) {
+    .card {
+        flex-direction: column;
+    }
+
+    .card img {
+        width: 100%;
+        height: auto;
+    }
+}
+</style>
+</head>
+<body>
+
+<h1>AI Prompt Gallery</h1>
+
+<div class="gallery" id="gallery"></div>
+
+<div class="pagination">
+    <button class="page-btn" id="prevBtn">Previous</button>
+    <button class="page-btn" id="nextBtn">Next</button>
+</div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox()">
+    <img id="lightboxImg">
+</div>
+
+<script>
+
+const totalPrompts = 60;
+const itemsPerPage = 20;
+let currentPage = 1;
+
+const gallery = document.getElementById("gallery");
+const prevBtn = document.getElementById("prevBtn");
+const nextBtn = document.getElementById("nextBtn");
+const lightbox = document.getElementById("lightbox");
+const lightboxImg = document.getElementById("lightboxImg");
+
+function pad(num) {
+    return num.toString().padStart(2, '0');
+}
+
+async function renderPage(page) {
+    gallery.innerHTML = "";
+
+    const start = (page - 1) * itemsPerPage + 1;
+    const end = Math.min(start + itemsPerPage - 1, totalPrompts);
+
+    for (let i = start; i <= end; i++) {
+
+        const id = pad(i);
+
+        const card = document.createElement("div");
+        card.className = "card";
+
+        const imgA = document.createElement("img");
+        imgA.src = `images/prompt${id}_a.jpg`;
+        imgA.loading = "lazy";
+        imgA.onclick = () => openLightbox(imgA.src);
+
+        const imgB = document.createElement("img");
+        imgB.src = `images/prompt${id}_b.jpg`;
+        imgB.loading = "lazy";
+        imgB.onclick = () => openLightbox(imgB.src);
+
+        const promptDiv = document.createElement("div");
+        promptDiv.className = "prompt-text";
+        promptDiv.id = `prompt-${i}`;
+        promptDiv.textContent = "Loading...";
+
+        const button = document.createElement("button");
+        button.className = "copy-btn";
+        button.textContent = "Copy";
+        button.onclick = () => copyPrompt(i, button);
+
+        card.appendChild(imgA);
+        card.appendChild(imgB);
+        card.appendChild(promptDiv);
+        card.appendChild(button);
+
+        gallery.appendChild(card);
+
+        try {
+            const response = await fetch(`prompts/prompt${id}.txt`);
+            const text = await response.text();
+            promptDiv.textContent = text;
+        } catch {
+            promptDiv.textContent = "Error loading prompt.";
+        }
+    }
+
+    prevBtn.disabled = page === 1;
+    nextBtn.disabled = end >= totalPrompts;
+}
+
+function copyPrompt(index, button) {
+    const text = document.getElementById(`prompt-${index}`).innerText;
+    navigator.clipboard.writeText(text);
+    button.textContent = "Copied!";
+    setTimeout(() => button.textContent = "Copy", 1500);
+}
+
+function openLightbox(src) {
+    lightboxImg.src = src;
+    lightbox.classList.add("active");
+}
+
+function closeLightbox() {
+    lightbox.classList.remove("active");
+}
+
+prevBtn.onclick = () => {
+    if (currentPage > 1) {
+        currentPage--;
+        renderPage(currentPage);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+};
+
+nextBtn.onclick = () => {
+    if (currentPage * itemsPerPage < totalPrompts) {
+        currentPage++;
+        renderPage(currentPage);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+};
+
+renderPage(currentPage);
+
+</script>
+
+</body>
+</html>
