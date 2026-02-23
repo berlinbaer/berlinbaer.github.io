@@ -25,7 +25,6 @@
         width: 100%;
         height: auto;
         cursor: pointer;
-        object-fit: cover;
         transition: transform 0.2s;
     }
 
@@ -50,12 +49,12 @@
         display: grid;
         grid-template-columns: 1fr 1fr 1fr;
         gap: 20px;
-        align-items: stretch;
-        background: #111;
+        align-items: start; /* important */
     }
 
     .lightbox img {
         width: 100%;
+        height: auto;  /* prevent stretching */
         border-radius: 6px;
         display: block;
     }
@@ -63,7 +62,6 @@
     .prompt-container {
         display: flex;
         flex-direction: column;
-        height: 100%;
     }
 
     .prompt-box {
@@ -74,7 +72,6 @@
         font-size: 14px;
         line-height: 1.5;
         overflow-y: auto;
-        flex: 1;
     }
 
     .copy-btn {
@@ -111,7 +108,6 @@
 </head>
 <body>
 
-<!-- ====== SET IMAGE COUNT HERE ====== -->
 <script>
 const TOTAL_IMAGES = 50;  // <<< CHANGE THIS
 </script>
@@ -124,7 +120,6 @@ const TOTAL_IMAGES = 50;  // <<< CHANGE THIS
     <div class="lightbox-content" id="lightboxContent">
         <img id="imgA" src="">
         <img id="imgB" src="">
-
         <div class="prompt-container">
             <div class="prompt-box" id="promptText">Loading...</div>
             <button class="copy-btn" onclick="copyPrompt()">Copy Prompt</button>
@@ -148,17 +143,29 @@ for (let i = 1; i <= TOTAL_IMAGES; i++) {
 }
 
 function openLightbox(id) {
-    document.getElementById("lightbox").style.display = "block";
-    document.getElementById("imgA").src = `images/prompt${id}_a.jpg`;
-    document.getElementById("imgB").src = `images/prompt${id}_b.jpg`;
+    const lightbox = document.getElementById("lightbox");
+    const imgA = document.getElementById("imgA");
+    const imgB = document.getElementById("imgB");
+    const promptBox = document.getElementById("promptText");
+
+    lightbox.style.display = "block";
+
+    imgA.src = `images/prompt${id}_a.jpg`;
+    imgB.src = `images/prompt${id}_b.jpg`;
+
+    // Wait for image A to load to match height
+    imgA.onload = function() {
+        const height = imgA.clientHeight;
+        promptBox.style.height = height + "px";
+    };
 
     fetch(`prompts/prompt${id}.txt`)
         .then(response => response.text())
         .then(text => {
-            document.getElementById("promptText").textContent = text;
+            promptBox.textContent = text;
         })
         .catch(() => {
-            document.getElementById("promptText").textContent = "Prompt not found.";
+            promptBox.textContent = "Prompt not found.";
         });
 }
 
